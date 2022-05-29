@@ -37,7 +37,11 @@
             Define REST endpoints:
                 GET /challenges/random will return a randomly generated challenge.
                 POST /attempts/ will be our endpoint to send an attempt to solve a challenge.
-            Write ChallengeAttemptController
+            Write empty ChallengeAttemptController
+            Write ChallengeAttemptControllerTest for valid and invalid scenario and let it fail
+            Fill the methods in ChallengeAttemptController 
+                Change ChallengeAttemptDTO to add validation constraints. Then, add @Valid in ChallengeAttemptController
+        Start application and test using HTTPie
             
             
         
@@ -48,9 +52,14 @@
     
     Test using HTTPie
         http localhost:8080/challenges/random
+        http -b :8080/challenges/random
+        http POST :8080/attempts factorA=58 factorB=92 userAlias=moises
+        http POST :8080/attempts factorA=58 factorB=92 userAlias=moises guess=-400
+        http POST :8080/attempts factorA=58 factorB=92 userAlias=moises guess=5336
     
 ## Run tests
-    mvn test -Dtest=ChallengeServiceTest     
+    mvn test -Dtest=ChallengeServiceTest    
+    mvn test -Dtest=ChallengeAttemptControllerTest   
     
     
 ## Key Learnings:
@@ -79,8 +88,24 @@
     5) @RequiredArgsConstructor creates a constructor with a private and final variable as argument.
         Spring uses dependency injection to find a bean that implements the interface of variable and wire it to controller
         @Slf4j creates a logger named log 
+        
+    6) Testing a Spring controller requires a different approach as there is a web layer inbetween
+        We want to test features - validation, request mapping, or error handling, which are configured by us but provided by Spring Boot. 
            
+           Without running the embedded server:
+               We can use @SpringBootTest without parameters or, even better, @WebMvcTest to instruct Spring to selectively load only the 
+               required configuration instead of the whole application context. 
+               Then, we simulate requests with a dedicated tool included in the Spring Test module, MockMvc.
            
+           Running the embedded server:
+               In this case, we use @SpringBootTest with its webEnvironment parameter set to RANDOM_PORT or DEFINED_PORT. 
+                Then, we have to make real HTTP calls to the server. Spring Boot includes a class TestRestTemplate with some 
+                useful features to perform these test requests.
+    
+    7) @AutoConfigureJsonTesters tells Spring to configure beans of type JacksonTester for some fields we declare in the test. 
+    In our case, we use @Autowired to inject two JacksonTester beans from the test context. Spring Boot, when instructed via 
+    this annotation, takes care of building these utility classes. 
+    A JacksonTester may be used to serialize and deserialize objects using the same configuration (i.e., ObjectMapper) as the app would do in runtime.
     
 ## Useful Links
 
